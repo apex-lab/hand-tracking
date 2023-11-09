@@ -1,0 +1,18 @@
+from .glove import FiveDTGlove
+
+CH_NAMES = dict( # channel names and indices for 14 channel glove
+	FD_THUMBNEAR = 0,
+	FD_THUMBFAR = 1,
+	FD_THUMBINDEX = 2,
+	FD_INDEXNEAR = 3,
+	FD_INDEXFAR = 4,
+	FD_INDEXMIDDLE = 5,
+	FD_MIDDLENEAR = 6,
+	FD_MIDDLEFAR = 7,
+	FD_MIDDLERING = 8,
+	FD_RINGNEAR = 9,
+	FD_RINGFAR = 10,
+	FD_RINGLITTLE = 11,
+	FD_LITTLENEAR = 12,
+	FD_LITTLEFAR = 13
+)
