@@ -18,8 +18,9 @@ import numpy as np
 import pandas as pd
 
 OUTPUT_DIR = 'output'
-LEAP_OUTPUT_FILE = 'leap_%s.csv'%strftime('%Y%m%d-%H%M%S')
-GLOVE_OUTPUT_FILE = 'glove_%s.csv'%strftime('%Y%m%d-%H%M%S')
+str_time = strftime('%Y%m%d-%H%M%S')
+LEAP_OUTPUT_FILE = 'leap_%s.tsv'%str_time
+GLOVE_OUTPUT_FILE = 'glove_%s.tsv'%str_time
 
 clock = WinClock()
 
@@ -102,5 +103,5 @@ if __name__ == '__main__':
     controller.remove_listener(listener)
     print('Terminated Leap recording...')
     df = listener.exit()
-    df.to_csv(leap_f)
+    df.iloc[1:, :].to_csv(leap_f, sep = '\t', index = False)
     print('Saved!')
