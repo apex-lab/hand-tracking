@@ -11,7 +11,7 @@ os.chdir(rose_dir)
 
 from resources.LeapSDK.v53_python39 import Leap
 from LeapData import LeapData
-from glove import GloveRecorder
+from glove import GloveRecorder, WinClock
 
 from time import time, strftime
 import numpy as np
@@ -20,6 +20,8 @@ import pandas as pd
 OUTPUT_DIR = 'output'
 LEAP_OUTPUT_FILE = 'leap_%s.csv'%strftime('%Y%m%d-%H%M%S')
 GLOVE_OUTPUT_FILE = 'glove_%s.csv'%strftime('%Y%m%d-%H%M%S')
+
+clock = WinClock()
 
 class DataHandler(LeapData):
     '''
@@ -38,7 +40,7 @@ class DataHandler(LeapData):
             return
 
         channel_values = self._get_channel_values(hand)
-        self._motions.append((time(), channel_values))
+        self._motions.append((clock.time(), channel_values))
         return frame
 
     def _motion2dataframe(self):
