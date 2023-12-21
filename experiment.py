@@ -13,7 +13,7 @@ from util import (
 	init_keyboard, 
 	fixation,
 	show_instructions,
-	_display_text
+	_display_text,
 	generate_order
 	)
 
@@ -105,7 +105,7 @@ if __name__ == __main__:
 	subj_num = input("Enter subject number: ")
 	sub = '%02d'%int(subj_num)
 	run_num = int(input("Enter run number: "))
-	run = '%02d'%int(subj_num)
+	run = '%02d'%int(run_num)
 
 	output_dir = os.path.join(LOG_DIR, 'sub-%s'%sub, 'run-%s'%run)
 	if os.path.exists(output_dir):
