@@ -8,13 +8,14 @@ import os
 from glove import GloveRecorder, WinClock
 from glove.logging import TSVLogger
 
-from psychopy import visual, core 
+from psychopy import visual, core
 from util import (
-	init_keyboard, 
+	init_keyboard,
 	fixation,
 	show_instructions,
 	_display_text,
-	generate_order
+	generate_order,
+	TRSync
 	)
 
 clock = WinClock() # clock.time() is essentially time.perf_counter(),
@@ -24,15 +25,15 @@ clock = WinClock() # clock.time() is essentially time.perf_counter(),
 
 LOG_DIR = 'logs'
 MRI_EMULATED_KEY = 's'
-KB_NAME = ''
+KB_NAME = 'DELL DELL USB Keyboard'
 
 ###### Experiment code #######
 
 def main(log_fpath, clock):
 
-	# create log file 
+	# create log file
 	log = TSVLogger(log_fpath,
-		fields = ['timestamp', 'target_position'] 
+		fields = ['timestamp', 'target_position']
 		)
 
 	win = visual.Window(
@@ -47,27 +48,27 @@ def main(log_fpath, clock):
 	kb = init_keyboard(KB_NAME)
 	positions = generate_order()
 
-	show_instructions(win, kb, 
+	show_instructions(win, kb,
 	'''
 	In this task, you will be show pictures of hand gestures.
 	Your job is to mimic the position of the displayed hand with your own.
 
-	As each new image appears, please transition your hand directly 
+	As each new image appears, please transition your hand directly
 	from the previous gesture to the new gesture and hold the position
-	until another gesture appears. 
+	until another gesture appears.
 	'''
 	)
 	show_instructions(win, kb,
 	'''
-	As you do this, please keep your wrist straight and palm facing down, 
-	and try not to move any part of your body other than your fingers. 
+	As you do this, please keep your wrist straight and palm facing down,
+	and try not to move any part of your body other than your fingers.
 
 	It is especially important that your head remain still while in the scanner.
 	'''
 	)
 	show_instructions(win, kb,
 	'''
-	You may now begin. 
+	You may now begin.
 	'''
 	)
 
@@ -119,24 +120,13 @@ if __name__ == __main__:
 	glove_recorder = GloveRecorder(glove_f, port = 'USB0')
     glove_recorder.start()
 
-    tr_log = TSVLogger(tr_f, ['timestamp'])
-    def record_tr():
-		t = clock.time()
-		tr_log.write(timestamp = t)
-		return
-	event.globalKeys.clear()
-	event.globalKeys.add(key = MRI_EMULATED_KEY, func = myfunc)
+    tr_listener = TRSync(tr_f, KB_NAME, MRI_EMULATED_KEY)
+    tr_listener.start()
 	print('\n\nListening for TRs!\n\n')
 
 	print('\n\nIs MRI ready?')
 	input('\nPress enter to begin experiment.')
     main(log_f)
 
-    event.globalKeys.remove(key = 'all')
-    tr_log.close()
+    tr_listener.stop()
     glove_recorder.stop()
-
-
-
-
-

@@ -4,6 +4,9 @@ import os
 from psychopy.hardware.keyboard import Keyboard
 from psychtoolbox import hid
 
+from glove import WinClock
+from glove.logging import TSVLogger
+
 def init_keyboard(dev_name = 'Dell Dell USB Entry Keyboard'):
     devs = hid.get_keyboard_indices()
     idxs = devs[0]
@@ -69,7 +72,7 @@ def _generate_order():
 	pos_list = []
 	pos_list.append(np.random.choice(positions)) # start on a random position
 	# then exhaust all possible transitions
-	for i in range(len(positions) * (len(positions) - 1)): 
+	for i in range(len(positions) * (len(positions) - 1)):
 		np.random.shuffle(transitions[pos_list[-1]])
 		next_pos = transitions[pos_list[-1]].pop()
 		pos_list.append(next_pos)
@@ -88,6 +91,38 @@ def generate_order():
 			continue
 	return order
 
+def record_TRs(stop_event, fname, kb_name, mri_key):
+    clock = WinClock()
+	kb = init_keyboard(kb_name)
+	log = TSVLogger(fname, 'TR', ['timestamp'])
+	try: # in case we're interrupted by main process
+		while True:
+			assert(not stop_event.is_set())
+			keys = kb.getKeys([mri_key], waitRelease = False, clear = True)
+			if keys:
+				t = clock.time()
+				log.write(timestamp = t)
+	except:
+		log.close()
 
+class TRSync:
 
+	def __init__(self, fname, kb_name, mri_key):
+		self.fname = fname
+		self.kb_name = kb_name
+		self.mri_key = mri_key
 
+	def start(self):
+		self._stop_event = Event()
+		self._process = Process(
+			target = record_TRs,
+			args = (self._stop_event, self.fname, self.kb_name, self.mri_key)
+			)
+		self._process.start()
+
+	def stop(self):
+		self._stop_event.set()
+		self._process.join()
+
+	def __del__(self):
+		self.stop()
