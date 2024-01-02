@@ -73,7 +73,7 @@ def main(log_fpath):
     )
 
     def record_event(name):
-        log.write(timestamp = clock.time(), position = name)
+        log.write(timestamp = clock.time(), target_position = name)
 
     for position in positions:
         image = visual.ImageStim(win, position)
@@ -81,7 +81,7 @@ def main(log_fpath):
         win.callOnFlip(record_event, name = position)
         win.flip()
         core.wait(5.)
-    log.write(timestamp = clock.time(), position = 'n/a')
+    log.write(timestamp = clock.time(), target_position = 'n/a')
     log.close()
 
     _display_text(win,
