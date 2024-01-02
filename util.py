@@ -1,7 +1,9 @@
+from multiprocessing import Process, Event 
 import numpy as np
 import os
 
 from psychopy.hardware.keyboard import Keyboard
+from psychopy import visual 
 from psychtoolbox import hid
 
 from glove import WinClock
@@ -65,64 +67,64 @@ def show_instructions(win, kb, msg, max_width = None):
 
 def _generate_order():
 
-	# gather stimuli and possible transitions between them
-	positions = [os.path.join('stimuli', 'image_%d.jpeg'%i) for i in range(1, 9)]
-	transitions = {pos: [p for p in positions if p != pos] for pos in positions}
+    # gather stimuli and possible transitions between them
+    positions = [os.path.join('stimuli', 'image_%d.jpeg'%i) for i in range(1, 9)]
+    transitions = {pos: [p for p in positions if p != pos] for pos in positions}
 
-	pos_list = []
-	pos_list.append(np.random.choice(positions)) # start on a random position
-	# then exhaust all possible transitions
-	for i in range(len(positions) * (len(positions) - 1)):
-		np.random.shuffle(transitions[pos_list[-1]])
-		next_pos = transitions[pos_list[-1]].pop()
-		pos_list.append(next_pos)
+    pos_list = []
+    pos_list.append(np.random.choice(positions)) # start on a random position
+    # then exhaust all possible transitions
+    for i in range(len(positions) * (len(positions) - 1)):
+        np.random.shuffle(transitions[pos_list[-1]])
+        next_pos = transitions[pos_list[-1]].pop()
+        pos_list.append(next_pos)
 
-	return pos_list
+    return pos_list
 
 def generate_order():
-	'''
-	exhausts all possible transitions in random order, and then does it again
-	'''
-	order = []
-	while len(order) < 100:
-		try:
-			order += _generate_order()
-		except:
-			continue
-	return order
+    '''
+    exhausts all possible transitions in random order, and then does it again
+    '''
+    order = []
+    while len(order) < 100:
+        try:
+            order += _generate_order()
+        except:
+            continue
+    return order
 
 def record_TRs(stop_event, fname, kb_name, mri_key):
     clock = WinClock()
-	kb = init_keyboard(kb_name)
-	log = TSVLogger(fname, 'TR', ['timestamp'])
-	try: # in case we're interrupted by main process
-		while True:
-			assert(not stop_event.is_set())
-			keys = kb.getKeys([mri_key], waitRelease = False, clear = True)
-			if keys:
-				t = clock.time()
-				log.write(timestamp = t)
-	except:
-		log.close()
+    kb = init_keyboard(kb_name)
+    log = TSVLogger(fname, ['timestamp'])
+    try: # in case we're interrupted by main process
+        while True:
+            assert(not stop_event.is_set())
+            keys = kb.getKeys([mri_key], waitRelease = False, clear = True)
+            if keys:
+                t = clock.time()
+                log.write(timestamp = t)
+    except:
+        log.close()
 
 class TRSync:
 
-	def __init__(self, fname, kb_name, mri_key):
-		self.fname = fname
-		self.kb_name = kb_name
-		self.mri_key = mri_key
+    def __init__(self, fname, kb_name, mri_key):
+        self.fname = fname
+        self.kb_name = kb_name
+        self.mri_key = mri_key
 
-	def start(self):
-		self._stop_event = Event()
-		self._process = Process(
-			target = record_TRs,
-			args = (self._stop_event, self.fname, self.kb_name, self.mri_key)
-			)
-		self._process.start()
+    def start(self):
+        self._stop_event = Event()
+        self._process = Process(
+            target = record_TRs,
+            args = (self._stop_event, self.fname, self.kb_name, self.mri_key)
+            )
+        self._process.start()
 
-	def stop(self):
-		self._stop_event.set()
-		self._process.join()
+    def stop(self):
+        self._stop_event.set()
+        self._process.join()
 
-	def __del__(self):
-		self.stop()
+    def __del__(self):
+        self.stop()
