@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 from psychopy.hardware.keyboard import Keyboard
-from psychopy import visual 
+from psychopy import visual, core
 from psychtoolbox import hid
 
 from glove import WinClock
@@ -93,10 +93,11 @@ def generate_order():
             continue
     return order
 
-def record_TRs(stop_event, fname, kb_name, mri_key):
+def record_TRs(stop_event, start_event, fname, kb_name, mri_key):
     clock = WinClock()
     kb = init_keyboard(kb_name)
     log = TSVLogger(fname, ['timestamp'])
+    first_tr = True
     try: # in case we're interrupted by main process
         while True:
             assert(not stop_event.is_set())
@@ -104,6 +105,9 @@ def record_TRs(stop_event, fname, kb_name, mri_key):
             if keys:
                 t = clock.time()
                 log.write(timestamp = t)
+                if first_tr:
+                    first_tr = False
+                    start_event.set()
     except:
         log.close()
 
@@ -116,15 +120,31 @@ class TRSync:
 
     def start(self):
         self._stop_event = Event()
+        self._start_event = Event()
         self._process = Process(
             target = record_TRs,
-            args = (self._stop_event, self.fname, self.kb_name, self.mri_key)
+            args = (
+                self._stop_event, 
+                self._start_event, 
+                self.fname, 
+                self.kb_name, 
+                self.mri_key
+                )
             )
         self._process.start()
 
     def stop(self):
         self._stop_event.set()
         self._process.join()
+
+    @property
+    def received_first_TR(self):
+        return self._start_event.is_set()
+
+    def wait_until_first_TR(self, poll_time = .05):
+        while not self.received_first_TR:
+            core.wait(poll_time)
+        return
 
     def __del__(self):
         self.stop()

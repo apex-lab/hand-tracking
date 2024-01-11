@@ -1,4 +1,4 @@
-name: hand-tracking
+name: psychopy-leap
 channels:
 - conda-forge
 dependencies:
@@ -12,7 +12,6 @@ dependencies:
 - pywin32=301
 - pywinauto=0.6.8
 - wxpython>=4.1.0
-- pyglet=1.4.10
 - pip
 - pip:
   - psychtoolbox

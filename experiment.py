@@ -29,7 +29,7 @@ KB_NAME = 'Keyboard'
 
 ###### Experiment code #######
 
-def main(log_fpath):
+def main(log_fpath, tr_listener):
 
     # create log file
     log = TSVLogger(log_fpath,
@@ -71,6 +71,13 @@ def main(log_fpath):
     You may now begin.
     '''
     )
+    _display_text(win,
+    '''
+    Waiting for scanner... task will begin momentarily!
+    '''
+    )
+    print('\n\nWaiting for MRI to start...')
+    tr_listener.wait_until_first_TR()
 
     def record_event(name):
         log.write(timestamp = clock.time(), target_position = name)
@@ -124,9 +131,7 @@ if __name__ == '__main__':
     tr_listener.start()
     print('\n\nListening for TRs!\n\n')
 
-    print('\n\nIs MRI ready?')
-    input('\nPress enter to begin experiment.')
-    main(log_f)
+    main(log_f, tr_listener)
 
     tr_listener.stop()
     glove_recorder.stop()
