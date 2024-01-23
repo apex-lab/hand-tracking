@@ -50,20 +50,22 @@ def _display_text(win, txt, **txt_kwargs):
     msg.draw()
     win.flip()
 
-def _wait_for_spacebar(kb):
+def _wait_for_key(kb):
     '''
+    Waits for input from response pad (keys 1-5 in MRIRC default)
+
     Parameters
     ----------
     kb : psychopy.hardware.Keyboard
     '''
-    kb.waitKeys(keyList = ['space'], clear = True)
+    kb.waitKeys(keyList = ['1', '2', '3', '4', '5'], clear = True)
 
 def show_instructions(win, kb, msg, max_width = None):
     if max_width is None:
         max_width = win.size[0]
-    msg += '\n(Press the space bar to continue.)'
+    msg += '\n(Press a button to continue.)'
     _display_text(win, msg, wrapWidth = max_width)
-    _wait_for_spacebar(kb)
+    _wait_for_key(kb)
 
 def _generate_order():
 
