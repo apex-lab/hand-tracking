@@ -88,11 +88,12 @@ def generate_order():
     exhausts all possible transitions in random order, and then does it again
     '''
     order = []
-    while len(order) < 100:
+    while len(order) < 120:
         try:
             order += _generate_order()
         except:
             continue
+    order = order[:120]
     return order
 
 def record_TRs(stop_event, start_event, fname, kb_name, mri_key):
